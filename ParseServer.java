@@ -1,7 +1,9 @@
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.URL;
 import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -12,8 +14,15 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.*;
-import de.l3s.boilerpipe.extractors.ArticleExtractor;
+import org.xml.sax.InputSource;
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
+import de.l3s.boilerpipe.BoilerpipeExtractor;
+import de.l3s.boilerpipe.document.Image;
+import de.l3s.boilerpipe.document.TextDocument;
+import de.l3s.boilerpipe.extractors.ArticleExtractor;
+import de.l3s.boilerpipe.extractors.CommonExtractors;
+import de.l3s.boilerpipe.sax.ImageExtractor;
+import de.l3s.boilerpipe.sax.BoilerpipeSAXInput;
 
 public class ParseServer{
   public static void main(String[] args) throws IOException {
@@ -33,26 +42,45 @@ public class ParseServer{
 
 class MyHandler implements HttpHandler {
   public void handle(HttpExchange exchange) throws IOException {
-      InputStream is = exchange.getRequestBody();
-      BufferedReader in = new BufferedReader(new InputStreamReader(is));
-      String requestMethod = exchange.getRequestMethod();
+    // headers stuff
+    OutputStream responseBody = exchange.getResponseBody();
+    Headers requestHeaders = exchange.getRequestHeaders();
+    Headers responseHeaders = exchange.getResponseHeaders();
+    responseHeaders.set("Content-Type", "text/plain");
+    exchange.sendResponseHeaders(200, 0);
 
-      Headers responseHeaders = exchange.getResponseHeaders();
-      responseHeaders.set("Content-Type", "text/plain");
-      exchange.sendResponseHeaders(200, 0);
+    InputStream is = exchange.getRequestBody();
+    BufferedReader br = new BufferedReader(new InputStreamReader(is));
+    // build url string from input stream
+    StringBuilder sb = new StringBuilder();
+    String line;
+    while ((line = br.readLine()) != null) {
+      sb.append(line);
+    } 
+    URL url = new URL(sb.toString());
+    br.close();
 
+    // get the image from the provided url
+    BoilerpipeExtractor extractor = CommonExtractors.ARTICLE_EXTRACTOR;
+    ImageExtractor ie = ImageExtractor.INSTANCE;
+    List<Image> imgUrls =  null;
+    try {
+      imgUrls = ie.process(url, extractor);
+    } catch (Exception e) {
+      System.out.println("Image processing fail");
+    }
 
-      OutputStream responseBody = exchange.getResponseBody();
-      Headers requestHeaders = exchange.getRequestHeaders();
-      String s = "";
-      try {
-        s = ArticleExtractor.INSTANCE.getText(in);
-      } catch (BoilerpipeProcessingException e) {
-        System.out.println("Processing failed");
-      }
+    Collections.sort(imgUrls);
 
-      responseBody.write(s.getBytes());
-      responseBody.close();
+    //System.out.println("Images?" + " " + imgUrls.size());
+    //for(Image img : imgUrls) {
+    //  System.out.println("* " + img.getSrc());
+    //}
+
+    // send the first image back
+    if (imgUrls.size() > 0) {
+      responseBody.write(imgUrls.get(0).getSrc().getBytes());
+    }
+    responseBody.close();
   }
 }
-
