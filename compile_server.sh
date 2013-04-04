@@ -1,1 +1,4 @@
-javac -d classes -classpath boilerpipe-1.2.0.jar ParseServer.java
+javac -d classes \
+  -classpath "lib/*" \
+  -Xlint \
+  ParseServer.java

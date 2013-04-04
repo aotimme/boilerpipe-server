@@ -24,6 +24,9 @@ import de.l3s.boilerpipe.extractors.CommonExtractors;
 import de.l3s.boilerpipe.sax.ImageExtractor;
 import de.l3s.boilerpipe.sax.BoilerpipeSAXInput;
 
+import org.json.simple.JSONObject;
+import org.json.simple.JSONArray;
+
 public class ParseServer{
   public static void main(String[] args) throws IOException {
     InetSocketAddress addr = new InetSocketAddress(6666);
@@ -46,7 +49,7 @@ class MyHandler implements HttpHandler {
     OutputStream responseBody = exchange.getResponseBody();
     Headers requestHeaders = exchange.getRequestHeaders();
     Headers responseHeaders = exchange.getResponseHeaders();
-    responseHeaders.set("Content-Type", "text/plain");
+    responseHeaders.set("Content-Type", "application/json");
     exchange.sendResponseHeaders(200, 0);
 
     InputStream is = exchange.getRequestBody();
@@ -77,10 +80,16 @@ class MyHandler implements HttpHandler {
     //  System.out.println("* " + img.getSrc());
     //}
 
-    // send the first image back
-    if (imgUrls.size() > 0) {
-      responseBody.write(imgUrls.get(0).getSrc().getBytes());
+    JSONArray list = new JSONArray();
+    for (Image img : imgUrls) {
+      list.add(img.getSrc().toString());
     }
+
+    // send the first image back
+    //if (imgUrls.size() > 0) {
+    //  responseBody.write(imgUrls.get(0).getSrc().getBytes());
+    //}
+    responseBody.write(list.toString().getBytes());
     responseBody.close();
   }
 }
