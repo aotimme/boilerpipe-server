@@ -82,7 +82,12 @@ class MyHandler implements HttpHandler {
 
     JSONArray list = new JSONArray();
     for (Image img : imgUrls) {
-      list.add(img.getSrc().toString());
+      JSONObject obj = new JSONObject();
+      obj.put("src", img.getSrc());
+      obj.put("alt", img.getAlt());
+      obj.put("height", img.getHeight());
+      obj.put("width", img.getWidth());
+      list.add(obj);
     }
 
     // send the first image back
