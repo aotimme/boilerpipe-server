@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# may want to run as:
+# `./test | jsonpretty > result.json`
+curl "http://venturebeat.com/2013/04/02/let-your-voice-do-the-work-with-dragon-dictate-for-mac-3-vb-store/" | curl -d @- "localhost:6666"
