@@ -23,9 +23,14 @@ import de.l3s.boilerpipe.extractors.ArticleExtractor;
 import de.l3s.boilerpipe.extractors.CommonExtractors;
 import de.l3s.boilerpipe.sax.ImageExtractor;
 import de.l3s.boilerpipe.sax.BoilerpipeSAXInput;
+import de.l3s.boilerpipe.sax.HTMLFetcher;
+import de.l3s.boilerpipe.sax.HTMLDocument;
 
 import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FileUtils;
 
 public class ParseServer{
   public static void main(String[] args) throws IOException {
@@ -44,8 +49,28 @@ public class ParseServer{
 }
 
 class MyHandler implements HttpHandler {
+  protected void writeHTMLToFile(URL url) { 
+    try {
+      HTMLDocument html = HTMLFetcher.fetch(url);
+
+      // Create file 
+      InputSource in = html.toInputSource();
+
+      String encoding = in.getEncoding();
+      InputStream is = in.getByteStream();
+
+      StringWriter writer = new StringWriter();
+      IOUtils.copy(is, writer, encoding);
+      String theString = writer.toString();
+      FileUtils.writeStringToFile(new File("out.html"), theString);
+
+    } catch (Exception e) {
+      System.out.println("HTML doc fetch fail " + e);
+    }
+  }
+
   public void handle(HttpExchange exchange) throws IOException {
-    // headers stuff
+    // setting up the response
     OutputStream responseBody = exchange.getResponseBody();
     Headers requestHeaders = exchange.getRequestHeaders();
     Headers responseHeaders = exchange.getResponseHeaders();
@@ -53,33 +78,61 @@ class MyHandler implements HttpHandler {
     exchange.sendResponseHeaders(200, 0);
 
     InputStream is = exchange.getRequestBody();
-    BufferedReader br = new BufferedReader(new InputStreamReader(is));
-    // build url string from input stream
-    StringBuilder sb = new StringBuilder();
-    String line;
-    while ((line = br.readLine()) != null) {
-      sb.append(line);
-    } 
-    URL url = new URL(sb.toString());
-    br.close();
 
-    // get the image from the provided url
+    // copy the InputStream so we can use it again!
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    byte[] buffer = new byte[1024];
+    int len;
+    while ((len = is.read(buffer)) > -1 ) {
+        baos.write(buffer, 0, len);
+    }
+    baos.flush();
+
+    // Open new InputStreams using the recorded bytes
+    // Can be repeated as many times as you wish
+    InputStream is1 = new ByteArrayInputStream(baos.toByteArray()); 
+    InputStream is2 = new ByteArrayInputStream(baos.toByteArray());
+
+    InputSource inputSource1 = new InputSource(is1);
+    InputSource inputSource2 = new InputSource(is2);
+
+    // --------------
+    //StringWriter writer = new StringWriter();
+    //IOUtils.copy(
+    //    new ByteArrayInputStream(baos.toByteArray()),
+    //    writer, inputSource1.getEncoding());
+    //FileUtils.writeStringToFile(new File("content.html"), writer.toString());
+    // --------------
+
+    // extract the content
     BoilerpipeExtractor extractor = CommonExtractors.ARTICLE_EXTRACTOR;
+    TextDocument doc = null;
+    try {
+      doc = new BoilerpipeSAXInput(inputSource1).getTextDocument();
+      extractor.process(doc);
+    } catch (Exception e) {
+      System.out.println("HTML processing fail");
+      System.out.println(e);
+    }
+
+    // --------------
+    //FileUtils.writeStringToFile(new File("content.txt"), doc.getText(true, false));
+    // --------------
+
+    // extract the images
     ImageExtractor ie = ImageExtractor.INSTANCE;
     List<Image> imgUrls =  null;
     try {
-      imgUrls = ie.process(url, extractor);
+      imgUrls = ie.process(doc, inputSource2);
     } catch (Exception e) {
       System.out.println("Image processing fail");
     }
-
     Collections.sort(imgUrls);
 
-    //System.out.println("Images?" + " " + imgUrls.size());
-    //for(Image img : imgUrls) {
-    //  System.out.println("* " + img.getSrc());
-    //}
-
+    // convert to json for sending response
+    JSONObject result = new JSONObject();
+    result.put("title", doc.getTitle());
+    result.put("content", doc.getText(true, false));
     JSONArray list = new JSONArray();
     for (Image img : imgUrls) {
       JSONObject obj = new JSONObject();
@@ -89,12 +142,10 @@ class MyHandler implements HttpHandler {
       obj.put("width", img.getWidth());
       list.add(obj);
     }
+    result.put("images", list);
 
-    // send the first image back
-    //if (imgUrls.size() > 0) {
-    //  responseBody.write(imgUrls.get(0).getSrc().getBytes());
-    //}
-    responseBody.write(list.toString().getBytes());
+    // send response!
+    responseBody.write(result.toString().getBytes());
     responseBody.close();
   }
 }
