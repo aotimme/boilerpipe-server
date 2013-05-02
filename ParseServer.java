@@ -91,10 +91,8 @@ class MyHandler implements HttpHandler {
     // Open new InputStreams using the recorded bytes
     // Can be repeated as many times as you wish
     InputStream is1 = new ByteArrayInputStream(baos.toByteArray()); 
-    InputStream is2 = new ByteArrayInputStream(baos.toByteArray());
 
     InputSource inputSource1 = new InputSource(is1);
-    InputSource inputSource2 = new InputSource(is2);
 
     // --------------
     //StringWriter writer = new StringWriter();
@@ -104,7 +102,7 @@ class MyHandler implements HttpHandler {
     //FileUtils.writeStringToFile(new File("content.html"), writer.toString());
     // --------------
 
-    // extract the content
+    // Extraction for text
     BoilerpipeExtractor extractor = CommonExtractors.ARTICLE_EXTRACTOR;
     TextDocument doc = null;
     try {
@@ -119,11 +117,29 @@ class MyHandler implements HttpHandler {
     //FileUtils.writeStringToFile(new File("content.txt"), doc.getText(true, false));
     // --------------
 
-    // extract the images
+    // Extraction for images
+    InputStream is2 = new ByteArrayInputStream(baos.toByteArray());
+    InputStream is3 = new ByteArrayInputStream(baos.toByteArray());
+
+    InputSource inputSource2 = new InputSource(is2);
+    InputSource inputSource3 = new InputSource(is3);
+
+    BoilerpipeExtractor defExtractor = CommonExtractors.KEEP_EVERYTHING_EXTRACTOR;
+    TextDocument imageDoc = null;
+    try {
+      imageDoc = new BoilerpipeSAXInput(inputSource2).getTextDocument();
+      defExtractor.process(imageDoc);
+    } catch (Exception e) {
+      System.out.println("HTML processing fail");
+      System.out.println(e);
+    }
+
+    //FileUtils.writeStringToFile(new File("content.txt"), imageDoc.getText(true, false));
+
     ImageExtractor ie = ImageExtractor.INSTANCE;
     List<Image> imgUrls =  null;
     try {
-      imgUrls = ie.process(doc, inputSource2);
+      imgUrls = ie.process(imageDoc, inputSource3);
     } catch (Exception e) {
       System.out.println("Image processing fail");
     }
