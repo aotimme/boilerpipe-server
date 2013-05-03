@@ -45,4 +45,10 @@ sudo apt-get install openjdk-7-jdk openjdk-7-jre
 Follow the instructions at http://nltk.org/install.html, and you might
 as well download the data as well: http://nltk.org/data.html.
 
+Install Flask:
+
+```
+sudo pip install Flask
+```
+
 ### DONE!!

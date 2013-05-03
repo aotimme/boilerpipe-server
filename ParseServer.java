@@ -44,7 +44,7 @@ public class ParseServer{
     server.setExecutor(Executors.newFixedThreadPool(20));
 
     server.start();
-    System.out.println("Server is listening on port 6666");
+    System.out.println("Server is listening on port 6664");
   }
 }
 
