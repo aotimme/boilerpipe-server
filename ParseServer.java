@@ -69,6 +69,58 @@ class MyHandler implements HttpHandler {
     }
   }
 
+  TextDocument getArticleTextDoc(ByteArrayOutputStream baos) throws IOException {
+    // Open new InputStreams using the recorded bytes
+    // Can be repeated as many times as you wish
+    InputStream is1 = new ByteArrayInputStream(baos.toByteArray()); 
+
+    InputSource inputSource = new InputSource(is1);
+
+    // Extraction for text
+    BoilerpipeExtractor extractor = CommonExtractors.ARTICLE_EXTRACTOR;
+    TextDocument doc = null;
+    try {
+      doc = new BoilerpipeSAXInput(inputSource).getTextDocument();
+      extractor.process(doc);
+    } catch (Exception e) {
+      System.out.println("HTML processing fail");
+      System.out.println(e);
+    }
+
+    return doc;
+  }
+
+  List<Image> getImages(ByteArrayOutputStream baos) throws IOException {
+    // Extraction for images
+    InputStream is1 = new ByteArrayInputStream(baos.toByteArray());
+    InputSource textDocSource = new InputSource(is1);
+    InputStream is2 = new ByteArrayInputStream(baos.toByteArray());
+    InputSource imageDocSource = new InputSource(is2);
+
+    BoilerpipeExtractor extractor = CommonExtractors.KEEP_EVERYTHING_EXTRACTOR;
+    TextDocument imageDoc = null;
+    try {
+      imageDoc = new BoilerpipeSAXInput(textDocSource).getTextDocument();
+      extractor.process(imageDoc);
+    } catch (Exception e) {
+      System.out.println("HTML processing fail");
+      System.out.println(e);
+    }
+
+    //FileUtils.writeStringToFile(new File("content.txt"), imageDoc.getText(true, false));
+
+    ImageExtractor ie = ImageExtractor.INSTANCE;
+    List<Image> images =  null;
+    try {
+      images = ie.process(imageDoc, imageDocSource);
+    } catch (Exception e) {
+      System.out.println("Image processing fail");
+    }
+    Collections.sort(images);
+
+    return images;
+  }
+
   public void handle(HttpExchange exchange) throws IOException {
     // setting up the response
     OutputStream responseBody = exchange.getResponseBody();
@@ -88,69 +140,15 @@ class MyHandler implements HttpHandler {
     }
     baos.flush();
 
-    // Open new InputStreams using the recorded bytes
-    // Can be repeated as many times as you wish
-    InputStream is1 = new ByteArrayInputStream(baos.toByteArray()); 
-
-    InputSource inputSource1 = new InputSource(is1);
-
-    // --------------
-    //StringWriter writer = new StringWriter();
-    //IOUtils.copy(
-    //    new ByteArrayInputStream(baos.toByteArray()),
-    //    writer, inputSource1.getEncoding());
-    //FileUtils.writeStringToFile(new File("content.html"), writer.toString());
-    // --------------
-
-    // Extraction for text
-    BoilerpipeExtractor extractor = CommonExtractors.ARTICLE_EXTRACTOR;
-    TextDocument doc = null;
-    try {
-      doc = new BoilerpipeSAXInput(inputSource1).getTextDocument();
-      extractor.process(doc);
-    } catch (Exception e) {
-      System.out.println("HTML processing fail");
-      System.out.println(e);
-    }
-
-    // --------------
-    //FileUtils.writeStringToFile(new File("content.txt"), doc.getText(true, false));
-    // --------------
-
-    // Extraction for images
-    InputStream is2 = new ByteArrayInputStream(baos.toByteArray());
-    InputStream is3 = new ByteArrayInputStream(baos.toByteArray());
-
-    InputSource inputSource2 = new InputSource(is2);
-    InputSource inputSource3 = new InputSource(is3);
-
-    BoilerpipeExtractor defExtractor = CommonExtractors.KEEP_EVERYTHING_EXTRACTOR;
-    TextDocument imageDoc = null;
-    try {
-      imageDoc = new BoilerpipeSAXInput(inputSource2).getTextDocument();
-      defExtractor.process(imageDoc);
-    } catch (Exception e) {
-      System.out.println("HTML processing fail");
-      System.out.println(e);
-    }
-
-    //FileUtils.writeStringToFile(new File("content.txt"), imageDoc.getText(true, false));
-
-    ImageExtractor ie = ImageExtractor.INSTANCE;
-    List<Image> imgUrls =  null;
-    try {
-      imgUrls = ie.process(imageDoc, inputSource3);
-    } catch (Exception e) {
-      System.out.println("Image processing fail");
-    }
-    Collections.sort(imgUrls);
+    TextDocument doc = getArticleTextDoc(baos);
+    List<Image> images = getImages(baos);
 
     // convert to json for sending response
     JSONObject result = new JSONObject();
     result.put("title", doc.getTitle());
     result.put("content", doc.getText(true, false));
     JSONArray list = new JSONArray();
-    for (Image img : imgUrls) {
+    for (Image img : images) {
       JSONObject obj = new JSONObject();
       obj.put("src", img.getSrc());
       obj.put("alt", img.getAlt());
