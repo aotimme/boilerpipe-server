@@ -20,6 +20,11 @@ curl localhost:6666?url=http://mashable.com/2012/10/23/lifeswap/
 git clone git@github.com:aotimme/boilerpipe-server.git
 ```
 
+### Install PhantomJS:
+
+Download PhantomJS from their site (http://phantomjs.org/download.html)
+and add the executable to your path (e.g. `/usr/local/bin/phantomjs`)
+
 ### Install NodeJS:
 
 ```
