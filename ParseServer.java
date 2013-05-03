@@ -34,7 +34,7 @@ import org.apache.commons.io.FileUtils;
 
 public class ParseServer{
   public static void main(String[] args) throws IOException {
-    InetSocketAddress addr = new InetSocketAddress(6666);
+    InetSocketAddress addr = new InetSocketAddress(6664);
     HttpServer server = HttpServer.create(addr, 0);
 
     server.createContext("/", new MyHandler());

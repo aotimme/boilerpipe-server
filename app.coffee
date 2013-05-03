@@ -5,7 +5,7 @@ utils = require './utils'
 
 debug = debug 'extractor:server'
 
-PORT = 6667
+PORT = 6666
 
 app = express()
 

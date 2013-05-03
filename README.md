@@ -1,9 +1,7 @@
 boilerpipe-server
 =================
 
-## TODO:
-
-**Update the README for more detail on how it works and installation**
+## Usage:
 
 ```
 npm install
@@ -12,31 +10,35 @@ npm start
 ```
 
 ```
-curl localhost:6667?url=http://mashable.com/2012/10/23/lifeswap/
+curl localhost:6666?url=http://mashable.com/2012/10/23/lifeswap/
 ```
 
-## Outdated below:
+## Installation (Ubuntu)
 
-## Server
-Simple server/bash script for parsing article contents from a web page using the excellent boilerpipe project
-
-```
-./compile_server.sh
-./run_server.sh
-Server is listening on port 6666
-```
+### Clone:
 
 ```
-# in other window
-curl -d "http://mashable.com/2012/10/23/lifeswap/" "localhost:6666"
+git clone git@github.com:aotimme/boilerpipe-server.git
 ```
 
-
-## Bash script
-```
-./compile.sh
-```
+### Install NodeJS:
 
 ```
-curl "http://mobil.di.se/c.jsp;jsessionid=9A9574DB7A0D394DB97CB9247E5EDC7D.sonny4?cid=25400741&articleId=296509" | ./run.sh
+sudo apt-get install build-essential libssl-dev
+curl https://raw.github.com/creationix/nvm/master/install.sh | sh
+nvm install 0.8       # or newer
+nvm alias default 0.8
 ```
+
+### Install Java
+
+```
+sudo apt-get install openjdk-7-jdk openjdk-7-jre
+```
+
+### Install NLTK and Flask
+
+Follow the instructions at http://nltk.org/install.html, and you might
+as well download the data as well: http://nltk.org/data.html.
+
+### DONE!!

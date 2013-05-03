@@ -30,4 +30,4 @@ def index():
 if __name__ == "__main__":
   print extract_entities(WARMUP_TEXT)
   print "Done!"
-  app.run(port=6664)
+  app.run(port=6665)

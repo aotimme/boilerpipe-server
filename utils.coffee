@@ -3,8 +3,8 @@ async   = require 'async'
 phantom = require 'phantom'
 request = require('request').defaults jar: false
 
-BOILERPIPE_URL = 'http://localhost:6666'
-NER_URL = 'http://localhost:6664'
+BOILERPIPE_URL = 'http://localhost:6664'
+NER_URL = 'http://localhost:6665'
 TIMEOUT = 1000 * 10   # timeout after 10 seconds
 
 debug = debug 'extractor:utils'
