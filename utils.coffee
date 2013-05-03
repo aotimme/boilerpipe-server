@@ -4,6 +4,7 @@ phantom = require 'phantom'
 request = require('request').defaults jar: false
 
 BOILERPIPE_URL = 'http://localhost:6666'
+NER_URL = 'http://localhost:6664'
 TIMEOUT = 1000 * 10   # timeout after 10 seconds
 
 debug = debug 'extractor:utils'
@@ -31,6 +32,7 @@ getHTMLForUrl = (url, callback) ->
           callback null, html
 
 exports.getDataForUrl = (url, callback) ->
+  data = null
   async.waterfall [
     (next) ->
       getHTMLForUrl url, next
@@ -42,5 +44,15 @@ exports.getDataForUrl = (url, callback) ->
         timeout: TIMEOUT
         json: true
       , next
+    (res, body, next) ->
+      data = body
+      request
+        method: 'POST'
+        url: NER_URL
+        json: text: data.content
+      , next
+        # add `entities` to data after getting response
   ], (err, res, body) ->
-    callback err, body ? null
+    return callback err if err
+    data.entities = body.entities
+    callback null, data

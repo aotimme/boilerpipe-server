@@ -8,6 +8,15 @@ javaServer.stderr.on 'data', (data) ->
 javaServer.on 'close', (code) ->
   console.log "JAVA CLOSE: #{code}"
 
+pythonServer = spawn './nltk-ner.py'
+pythonServer.stdout.on 'data', (data) ->
+  console.log data.toString().trim()
+pythonServer.stderr.on 'data', (data) ->
+  console.log data.toString().trim()
+pythonServer.on 'close', (code) ->
+  console.log "JAVA CLOSE: #{code}"
+
+
 env = process.env
 env.DEBUG = '*'
 nodeServer = spawn 'node_modules/.bin/coffee', ['app.coffee'], {env}
