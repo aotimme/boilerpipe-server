@@ -9,27 +9,30 @@ TIMEOUT = 1000 * 10   # timeout after 10 seconds
 
 debug = debug 'extractor:utils'
 
+#getHTMLForUrl = (url, callback) ->
+#  # request and zombiejs didn't work :(
+#  phantom.create (ph) ->
+#    ph.createPage (page) ->
+#      hasCalledBack = false
+#      doCallback = ->
+#        return if hasCalledBack
+#        debug 'TIMEOUT!', url
+#        ph.exit()
+#        callback null, null
+#      setTimeout doCallback, 30 * 1000    # quit in 30 seconds
+#
+#      # set settings.userAgent?
+#      page.set 'viewportSize', width: 1286, height: 828
+#      page.open url, (status) ->
+#        page.evaluate (-> document.getElementsByTagName('html')[0].innerHTML)
+#        , (html) ->
+#          return if hasCalledBack
+#          hasCalledBack = true
+#          ph.exit()
+#          callback null, html
 getHTMLForUrl = (url, callback) ->
-  # request and zombiejs didn't work :(
-  phantom.create (ph) ->
-    ph.createPage (page) ->
-      hasCalledBack = false
-      doCallback = ->
-        return if hasCalledBack
-        debug 'TIMEOUT!', url
-        ph.exit()
-        callback null, null
-      setTimeout doCallback, 30 * 1000    # quit in 30 seconds
-
-      # set settings.userAgent?
-      page.set 'viewportSize', width: 1286, height: 828
-      page.open url, (status) ->
-        page.evaluate (-> document.getElementsByTagName('html')[0].innerHTML)
-        , (html) ->
-          return if hasCalledBack
-          hasCalledBack = true
-          ph.exit()
-          callback null, html
+  request url, (err, res, body) ->
+    callback err, body
 
 exports.getDataForUrl = (url, callback) ->
   data = null
