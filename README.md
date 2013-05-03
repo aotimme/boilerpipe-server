@@ -1,6 +1,22 @@
 boilerpipe-server
 =================
 
+## TODO:
+
+**Update the README for more detail on how it works and installation**
+
+```
+npm install
+./compile_server.sh
+npm start
+```
+
+```
+curl localhost:6667?url=http://mashable.com/2012/10/23/lifeswap/
+```
+
+## Outdated below:
+
 ## Server
 Simple server/bash script for parsing article contents from a web page using the excellent boilerpipe project
 
