@@ -4,8 +4,7 @@ boilerpipe-server
 ## Usage:
 
 ```
-npm install
-./compile_server.sh
+npm install   # lotsa Java compilation warnings
 npm start
 ```
 

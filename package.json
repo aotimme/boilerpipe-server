@@ -2,7 +2,8 @@
   "name": "Extractor",
   "version": "0.0.1",
   "scripts": {
-    "start": "coffee server.coffee"
+    "start": "coffee server.coffee",
+    "install": "./compile_server.sh"
   },
   "devDependencies": {
     "coffee-script": "~1.6.2",
