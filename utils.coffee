@@ -1,5 +1,6 @@
 debug   = require 'debug'
 async   = require 'async'
+_       = require 'underscore'
 phantom = require 'phantom'
 request = require('request').defaults jar: false
 
@@ -34,14 +35,15 @@ URL_REGEXP = /\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/?)(?:[^
 #          callback null, html
 getHTMLForUrl = (url, callback) ->
   request url, (err, res, body) ->
-    callback err, body
+    callback err, url: res?.request?.uri?.href, html: body
 
 exports.getDataForUrl = (url, callback) ->
-  data = null
+  data = original_url: url
   async.waterfall [
     (next) ->
       getHTMLForUrl url, next
-    (html, next) ->
+    ({url, html}, next) ->
+      data.url = url
       request
         method: 'GET'
         url: BOILERPIPE_URL
@@ -50,7 +52,7 @@ exports.getDataForUrl = (url, callback) ->
         json: true
       , next
     (res, body, next) ->
-      data = body
+      data = _(data).extend body
       request
         method: 'POST'
         url: NER_URL

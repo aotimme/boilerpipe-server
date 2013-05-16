@@ -14,7 +14,7 @@ pythonServer.stdout.on 'data', (data) ->
 pythonServer.stderr.on 'data', (data) ->
   console.log data.toString().trim()
 pythonServer.on 'close', (code) ->
-  console.log "JAVA CLOSE: #{code}"
+  console.log "PYTHON CLOSE: #{code}"
 
 
 env = process.env
