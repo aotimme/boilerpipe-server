@@ -9,6 +9,8 @@ TIMEOUT = 1000 * 10   # timeout after 10 seconds
 
 debug = debug 'extractor:utils'
 
+URL_REGEXP = /\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/?)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))*(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]?))/ig
+
 #getHTMLForUrl = (url, callback) ->
 #  # request and zombiejs didn't work :(
 #  phantom.create (ph) ->
@@ -54,8 +56,9 @@ exports.getDataForUrl = (url, callback) ->
         url: NER_URL
         json: text: data.content
       , next
-        # add `entities` to data after getting response
   ], (err, res, body) ->
     return callback err if err
+    # add `entities` to data after getting response
     data.entities = body.entities
+    data.url_mentions = data.content.match(URL_REGEXP) ? []
     callback null, data
